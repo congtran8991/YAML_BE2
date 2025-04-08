@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database.db_setting import ModelBase  # Giả sử bạn đã khai báo Base ở đây
-
+from datetime import datetime
 class GroupDatasetModel(ModelBase):
     __tablename__ = "groupdatasets"
 
@@ -14,4 +14,4 @@ class GroupDatasetModel(ModelBase):
     latest_version = Column(Integer, default=1, nullable=False)
     
     created_by = Column(String(50))
-    created_at = Column(TIMESTAMP, default="CURRENT_TIMESTAMP")
+    created_at = Column(TIMESTAMP, default=datetime.now())

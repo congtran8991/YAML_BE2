@@ -4,7 +4,7 @@ from fastapi import FastAPI, APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.group_datasets.schema import GroupDatasetCreateRequest, GroupDatasetResponse
-from apps.group_datasets.service import get_all_group_datasets
+from apps.group_datasets.service import get_all_group_datasets, create_group_dataset
 from database.postgresql import get_db
 
 # if TYPE_CHECKING:
@@ -17,5 +17,5 @@ async def get_group_datasets(db: AsyncSession = Depends(get_db)):
     return await get_all_group_datasets(db=db)
 
 @router.post("/api/group-datasets", response_model=Any)
-async def created_group_dataset(group_dataset: GroupDatasetCreateRequest):
-    return {}
+async def created_group_dataset(group_dataset: GroupDatasetCreateRequest, db: AsyncSession = Depends(get_db)):
+    return await create_group_dataset(db=db, requestBody=group_dataset)

@@ -1,11 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from contextlib import asynccontextmanager
-
-from database.postgresql import engine
-from database.db_setting import ModelBase
-
 from apps.group_datasets import view as group_datasets_view
 
 
@@ -24,5 +18,13 @@ from apps.group_datasets import view as group_datasets_view
 #     await engine.dispose()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Ghi rõ domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(group_datasets_view.router)
