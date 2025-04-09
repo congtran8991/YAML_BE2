@@ -1,7 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from apps.group_datasets import view as group_datasets_view
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
+from apps.group_datasets import view as group_datasets_view
+from apps.datasets import view as datasets_view
+
+from sqlalchemy.exc import IntegrityError
+import asyncpg
+
+from fastapi import status
+
+from utils.response import ResponseUtils
 
 
 
@@ -27,4 +38,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print("Error:", exc.errors(),"------------request:", request)
+    return await ResponseUtils.error_invalid_data("Dữ liệu gửi lên không hợp lệ")
+    
+
 app.include_router(group_datasets_view.router)
+app.include_router(datasets_view.router)

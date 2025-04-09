@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 from typing import Optional, Annotated
 from datetime import datetime
 

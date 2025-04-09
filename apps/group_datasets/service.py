@@ -7,6 +7,7 @@ from datetime import datetime
 from fastapi.encoders import jsonable_encoder
 
 from fastapi.responses import JSONResponse
+import asyncpg
 
 
 from fastapi import status
@@ -25,12 +26,11 @@ async def get_all_group_datasets(db: AsyncSession) -> List[GroupDatasetResponse]
         db_group_dataset = list(map(GroupDatasetResponse.model_validate, list_group_datasets))
     
     except SQLAlchemyError as err:
-        # Lỗi liên quan đến database
-        return ResponseUtils.error_DB(err)
+        return await ResponseUtils.error_DB(err)
     
     except Exception as err:
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
-        return ResponseUtils.error_Other(err)
+        return await ResponseUtils.error_Other(err)
     
     else:
         return JSONResponse(
@@ -57,22 +57,25 @@ async def create_group_dataset(requestBody: GroupDatasetCreateRequest, db: Async
         await db.commit()
         await db.refresh(db_group_dataset)
 
+        response_data = GroupDatasetResponse.model_validate(db_group_dataset)
+
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content={
+            content=jsonable_encoder({
                 "success": True,
                 "status_code": status.HTTP_201_CREATED,
                 "message": "Create data successfully",
-                "data": True
-            }
+                "data": response_data.model_dump()
+            })
         )
     except SQLAlchemyError as err:
-        print(err)
+        print("------error", err)
         # Lỗi liên quan đến database
         await db.rollback()
         return await ResponseUtils.error_DB(err)
     
     except Exception as err:
+        print("------error", err)
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
         await db.rollback()
         return await ResponseUtils.error_Other(err)
