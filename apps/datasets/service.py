@@ -10,7 +10,7 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from utils.response import ResponseUtils
+from utils.response import ResponseErrUtils
 
 async def create_multiple_datasets(
     requestBody: List[DatasetCreateRequest],
@@ -48,10 +48,10 @@ async def create_multiple_datasets(
         print("------error", err)
         # Lỗi liên quan đến database
         await db.rollback()
-        return await ResponseUtils.error_DB(err)
+        return await ResponseErrUtils.error_DB(err)
     
     except Exception as err:
         print("------error", err)
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
         await db.rollback()
-        return await ResponseUtils.error_Other(err)
+        return await ResponseErrUtils.error_Other(err)

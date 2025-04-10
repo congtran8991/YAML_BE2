@@ -6,13 +6,14 @@ from fastapi.encoders import jsonable_encoder
 
 from apps.group_datasets import view as group_datasets_view
 from apps.datasets import view as datasets_view
+from apps.users import view as users_view
 
 from sqlalchemy.exc import IntegrityError
 import asyncpg
 
 from fastapi import status
 
-from utils.response import ResponseUtils
+from utils.response import ResponseErrUtils
 
 
 
@@ -41,8 +42,8 @@ app.add_middleware(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     print("Error:", exc.errors(),"------------request:", request)
-    return await ResponseUtils.error_invalid_data("Dữ liệu gửi lên không hợp lệ")
+    return await ResponseErrUtils.error_invalid_data("Dữ liệu gửi lên không hợp lệ")
     
-
+app.include_router(users_view.router)
 app.include_router(group_datasets_view.router)
 app.include_router(datasets_view.router)

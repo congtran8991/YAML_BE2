@@ -13,7 +13,7 @@ import asyncpg
 from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
 
-from utils.response import ResponseUtils
+from utils.response import ResponseErrUtils
 
 async def get_all_group_datasets(db: AsyncSession) -> List[GroupDatasetResponse]:
     
@@ -26,11 +26,11 @@ async def get_all_group_datasets(db: AsyncSession) -> List[GroupDatasetResponse]
         db_group_dataset = list(map(GroupDatasetResponse.model_validate, list_group_datasets))
     
     except SQLAlchemyError as err:
-        return await ResponseUtils.error_DB(err)
+        return await ResponseErrUtils.error_DB(err)
     
     except Exception as err:
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
-        return await ResponseUtils.error_Other(err)
+        return await ResponseErrUtils.error_Other(err)
     
     else:
         return JSONResponse(
@@ -72,11 +72,11 @@ async def create_group_dataset(requestBody: GroupDatasetCreateRequest, db: Async
         print("------error", err)
         # Lỗi liên quan đến database
         await db.rollback()
-        return await ResponseUtils.error_DB(err)
+        return await ResponseErrUtils.error_DB(err)
     
     except Exception as err:
         print("------error", err)
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
         await db.rollback()
-        return await ResponseUtils.error_Other(err)
+        return await ResponseErrUtils.error_Other(err)
    
