@@ -14,6 +14,7 @@ import asyncpg
 from fastapi import status
 
 from utils.response import ResponseErrUtils
+from middleware.auth import AuthMiddleware
 
 
 
@@ -33,11 +34,13 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Ghi rõ domain
-    allow_credentials=True,
+    allow_origins=["*"],  # Ghi rõ domain
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(AuthMiddleware)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

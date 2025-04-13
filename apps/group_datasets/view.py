@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Any, ByteString
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.group_datasets.schema import GroupDatasetCreateRequest, GroupDatasetResponse
@@ -13,9 +13,11 @@ from database.postgresql import get_db
 router = APIRouter()
 
 @router.get("/api/group-datasets", response_model=List[GroupDatasetResponse])
-async def get_group_datasets(db: AsyncSession = Depends(get_db)):
-    return await get_all_group_datasets(db=db)
+async def get_group_datasets(request: Request, db: AsyncSession = Depends(get_db)):
+    user = request.state.user
+    return await get_all_group_datasets(db=db, user=user)
 
 @router.post("/api/group-datasets", response_model=Any)
-async def created_group_dataset(group_dataset: GroupDatasetCreateRequest, db: AsyncSession = Depends(get_db)):
-    return await create_group_dataset(db=db, requestBody=group_dataset)
+async def created_group_dataset(request: Request, group_dataset: GroupDatasetCreateRequest, db: AsyncSession = Depends(get_db)):
+    user = request.state.user
+    return await create_group_dataset(db=db,user=user, requestBody=group_dataset)

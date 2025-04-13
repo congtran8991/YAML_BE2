@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from utils.response import ResponseErrUtils
+from utils.handling_errors.exception_handler import UnicornException
 
 async def create_multiple_datasets(
     requestBody: List[DatasetCreateRequest],
@@ -18,6 +19,8 @@ async def create_multiple_datasets(
 ):
 
     try:
+        if len(requestBody) == 0:
+            raise UnicornException(status_code = status.HTTP_422_UNPROCESSABLE_ENTITY, message = "Data không hợp lệ")
         created = []
         for req in requestBody:
             dataset = DatasetModel(
@@ -49,6 +52,11 @@ async def create_multiple_datasets(
         # Lỗi liên quan đến database
         await db.rollback()
         return await ResponseErrUtils.error_DB(err)
+    
+    except UnicornException as err:
+        print("------error", err)
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
     
     except Exception as err:
         print("------error", err)

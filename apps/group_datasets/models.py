@@ -11,11 +11,12 @@ class GroupDatasetModel(ModelBase):
     code = Column(String(50), unique=True, nullable=False)
     name = Column(String(100), unique=True, nullable=False)
     latest_version = Column(Integer, nullable=False, default=1)
-    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(TIMESTAMP, default=datetime.now())
 
     # relationships
+    permissions_group_datasets = relationship("GroupDatasetPermissionModel", back_populates="group_datasets")
     created_by_user = relationship("UserModel", back_populates="group_datasets")
-    datasets = relationship("DatasetModel", back_populates="group_dataset", cascade="all, delete")
+    datasets = relationship("DatasetModel", back_populates="group_datasets", cascade="all, delete")
 
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from pydantic import BaseModel, Field, StringConstraints, ConfigDict
 from typing import Optional, Annotated, Dict, Any, List
 from datetime import datetime
 
@@ -10,9 +10,10 @@ class DatasetCreateRequest(BaseModel):
     steps: List[Dict[str, Any]] = Field(..., description="Các bước xử lý")
     output: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Output kết quả nếu có")
 
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(
+        from_attributes=True,  # Thay cho orm_mode = True
+        extra="ignore"         # Cho phép bỏ qua field không khai báo
+    )
 
 # class DatasetResponse(BaseModel):
 #     id: int

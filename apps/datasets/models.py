@@ -14,7 +14,7 @@ class DatasetModel(ModelBase):
     steps = Column(JSONB, nullable=False, default=list)
     output = Column(JSONB, default=dict)
     version = Column(Integer, nullable=False, default=1)
-    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(TIMESTAMP, default=datetime.now())
 
 
@@ -22,7 +22,7 @@ class DatasetModel(ModelBase):
         UniqueConstraint('group_dataset_id', 'name', name='uq_group_name'),
     )
 
-    group_dataset = relationship("GroupDatasetModel", back_populates="datasets")
+    group_datasets = relationship("GroupDatasetModel", back_populates="datasets")
     created_by_user = relationship("UserModel", back_populates="datasets")
 
 
