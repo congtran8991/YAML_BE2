@@ -10,7 +10,7 @@ class GroupDatasetModel(ModelBase):
     id = Column(Integer, primary_key=True)
     code = Column(String(50), unique=True, nullable=False)
     name = Column(String(100), unique=True, nullable=False)
-    latest_version = Column(Integer, nullable=False, default=1)
+    latest_version = Column(Integer, nullable=False, default=0)
     created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(TIMESTAMP, default=datetime.now())
 

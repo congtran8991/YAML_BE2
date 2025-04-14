@@ -80,7 +80,7 @@ async def create_group_dataset(user: UserInToken, requestBody: GroupDatasetCreat
         db_group_dataset = GroupDatasetModel(
             code = requestBody.code,
             name = requestBody.name,
-            latest_version = 1,
+            # latest_version = 0,
             created_by_id = user.id
         )
 

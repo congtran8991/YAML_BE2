@@ -17,7 +17,6 @@ from utils.response import ResponseErrUtils
 from middleware.auth import AuthMiddleware
 
 
-
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
 #     # Khởi động (startup)
@@ -42,11 +41,13 @@ app.add_middleware(
 
 app.add_middleware(AuthMiddleware)
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print("Error:", exc.errors(),"------------request:", request)
+    print("Error:", exc.errors(), "------------request:", request)
     return await ResponseErrUtils.error_invalid_data("Dữ liệu gửi lên không hợp lệ")
-    
+
+
 app.include_router(users_view.router)
 app.include_router(group_datasets_view.router)
 app.include_router(datasets_view.router)

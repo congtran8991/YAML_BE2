@@ -11,9 +11,9 @@
 #         include_paths = ["/api/login-user"]
 #         if request.url.path in include_paths:
 #                 return await call_next(request)
-        
+
 #         auth_header = request.headers.get("Authorization")
-#         print(auth_header, "auth_header") 
+#         print(auth_header, "auth_header")
 #         is_auth = verify_jwt_token(auth_header)
 #         if auth_header:
 #             is_auth = verify_jwt_token(auth_header)
@@ -30,12 +30,6 @@
 #         # Cho phép request đi tiếp
 #         response = await call_next(request)
 #         return await call_next(request)
-    
-
-
-
-
-
 
 
 from fastapi import FastAPI, Request, Response, status
@@ -49,45 +43,39 @@ from apps.users.schema import UserInToken
 
 app = FastAPI()
 
+
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
             if request.method == "OPTIONS":
                 return await call_next(request)
-            
-            include_paths = ["/api/login-user"]
+
+            include_paths = ["/api/login-user", "/docs"]
             if request.url.path in include_paths:
                 return await call_next(request)
-            
-            auth_header = request.headers.get('Authorization')
+
+            auth_header = request.headers.get("Authorization")
 
             print(auth_header, "auth_header1")
-            
+
             payload = verify_jwt_token(auth_header)
             if payload:
-                request.state.user = UserInToken(id=payload.get("iss"), email=payload.get("sub"))
+                request.state.user = UserInToken(
+                    id=payload.get("iss"), email=payload.get("sub")
+                )
                 return await call_next(request)
-            else: 
-                raise UnicornException(status_code = status.HTTP_401_UNAUTHORIZED, message = "Token không hợp lệ hoặc đã hết hạn")
-            
+            else:
+                raise UnicornException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    message="Token không hợp lệ hoặc đã hết hạn",
+                )
+
         except UnicornException as err:
             print("------error1", err.__dict__)
             return await ResponseErrUtils.error_UE(err)
-    
+
         except Exception as e:
             # response.headers["Access-Control-Allow-Origin"] = "*"
             # response.headers["Access-Control-Allow-Methods"] = "*"
             # response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
             return await ResponseErrUtils.error_Other(e)
-
-            
-  
-
-
-
-
-
-
-
-
-
