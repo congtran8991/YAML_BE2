@@ -9,7 +9,7 @@ from apps.datasets.schema import (
     DatasetResponse,
 )
 from apps.datasets.service import (
-    create_multiple_datasets,
+    create_multiple_dataset,
     get_datasets_by_group_dataset_id,
 )
 from database.postgresql import get_db
@@ -22,9 +22,9 @@ router = APIRouter()
 
 @router.post("/api/datasets", response_model=Any)
 async def created_dataset(
-    requestBody: List[DatasetCreateRequest], db: AsyncSession = Depends(get_db)
+    requestBody: DatasetCreateRequest, db: AsyncSession = Depends(get_db)
 ):
-    return await create_multiple_datasets(db=db, requestBody=requestBody)
+    return await create_multiple_dataset(db=db, requestBody=requestBody)
 
 
 @router.get(

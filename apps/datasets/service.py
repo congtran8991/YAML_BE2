@@ -1,11 +1,15 @@
 from typing import List
 from apps.datasets.schema import DatasetCreateRequest
 from apps.datasets.models import DatasetModel
+
+from apps.group_datasets.fetch import fetch_group_dataset_detail
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import selectinload
+
 
 from fastapi import status
 from fastapi.responses import JSONResponse
@@ -63,20 +67,33 @@ async def get_datasets_by_group_dataset_id(
         return await ResponseErrUtils.error_Other(err)
 
 
-async def create_multiple_datasets(
-    requestBody: List[DatasetCreateRequest], db: AsyncSession
-):
+async def create_multiple_dataset(requestBody: DatasetCreateRequest, db: AsyncSession):
 
     try:
-        if len(requestBody) == 0:
+        _list_dataset = requestBody.list_dataset
+        _group_dataset_id = requestBody.group_dataset_id
+
+        _group_dataset = fetch_group_dataset_detail(
+            group_dataset_id=_group_dataset_id, db=db
+        )
+
+        if not _group_dataset:
+            raise UnicornException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="group_dataset_not_found",
+            )
+        # else:
+        # update version 0 -> 1
+
+        if len(_list_dataset) == 0:
             raise UnicornException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                message="Data không hợp lệ",
+                message="Danh sách dataset của group_dataset không đúng forrmat",
             )
         created = []
-        for req in requestBody:
+        for req in _list_dataset:
             dataset = DatasetModel(
-                group_dataset_id=req.group_dataset_id,
+                group_dataset_id=_group_dataset_id,
                 name=req.name,
                 input=req.input,
                 steps=req.steps,

@@ -7,8 +7,7 @@ from apps.group_datasets.schema import GroupDatasetResponse
 
 
 # Define the schema for GroupDatasets
-class DatasetCreateRequest(BaseModel):
-    group_dataset_id: int = Field(..., description="ID của group dataset (foreign key)")
+class RecordDatasetCreateRequest(BaseModel):
     name: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)
     ]
@@ -22,6 +21,13 @@ class DatasetCreateRequest(BaseModel):
         from_attributes=True,  # Thay cho orm_mode = True
         extra="ignore",  # Cho phép bỏ qua field không khai báo
     )
+
+
+class DatasetCreateRequest(BaseModel):
+    list_dataset: List[RecordDatasetCreateRequest] = Field(
+        ..., description="Danh sách dataset"
+    )
+    group_dataset_id: int = Field(..., description="Group dataset")
 
 
 class DatasetsByGroupDatasetRequest(BaseModel):
