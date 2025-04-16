@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Any, ByteString
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import FastAPI, APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.datasets.schema import (
@@ -22,9 +22,12 @@ router = APIRouter()
 
 @router.post("/api/datasets", response_model=Any)
 async def created_dataset(
-    requestBody: DatasetCreateRequest, db: AsyncSession = Depends(get_db)
+    request: Request,
+    requestBody: DatasetCreateRequest,
+    db: AsyncSession = Depends(get_db),
 ):
-    return await create_multiple_dataset(db=db, requestBody=requestBody)
+    user = request.state.user
+    return await create_multiple_dataset(db=db, user=user, requestBody=requestBody)
 
 
 @router.get(

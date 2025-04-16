@@ -30,5 +30,4 @@ class GroupDatasetResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True  # Allows SQLAlchemy models to be converted to Pydantic models
         from_attributes = True

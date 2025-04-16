@@ -65,6 +65,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 )
                 return await call_next(request)
             else:
+                request.state.user = None
                 raise UnicornException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     message="Token không hợp lệ hoặc đã hết hạn",
@@ -72,6 +73,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         except UnicornException as err:
             print("------error1", err.__dict__)
+            request.state.user = None
             return await ResponseErrUtils.error_UE(err)
 
         except Exception as e:

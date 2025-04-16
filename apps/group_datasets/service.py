@@ -79,12 +79,15 @@ async def get_group_dataset_detail(
     group_dataset_id: int, db: AsyncSession
 ) -> GroupDatasetResponse:
     try:
-        _group_dataset = await fetch_group_dataset_detail(group_dataset_id, db)
+        _group_dataset = await fetch_group_dataset_detail(
+            group_dataset_id=group_dataset_id, db=db
+        )
         if not _group_dataset:
             raise UnicornException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="group_dataset_not_found",
             )
+        return _group_dataset
 
     except UnicornException as err:
         print("------error", err)

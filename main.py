@@ -1,17 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+
 from fastapi.encoders import jsonable_encoder
 
 from apps.group_datasets import view as group_datasets_view
 from apps.datasets import view as datasets_view
 from apps.users import view as users_view
 
-from sqlalchemy.exc import IntegrityError
-import asyncpg
-
-from fastapi import status
 
 from utils.response import ResponseErrUtils
 from middleware.auth import AuthMiddleware

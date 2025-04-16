@@ -1,5 +1,6 @@
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
+from sqlalchemy import update
 from apps.group_datasets.models import GroupDatasetModel
 from apps.group_datasets.schema import GroupDatasetResponse
 from apps.users.models import UserModel
@@ -10,13 +11,11 @@ from fastapi import HTTPException
 async def fetch_group_dataset_detail(
     group_dataset_id: int, db: AsyncSession
 ) -> GroupDatasetResponse:
+    print("-------------------fetch_group_dataset_detail-------------------")
     stmt = (
         select(GroupDatasetModel)
         .where(GroupDatasetModel.id == group_dataset_id)
-        .options(
-            joinedload(GroupDatasetModel.created_by_user),
-            joinedload(GroupDatasetModel.datasets),
-        )
+        .options(joinedload(GroupDatasetModel.created_by_user))
     )
     result = await db.execute(stmt)
     group_dataset = result.scalar_one_or_none()
@@ -24,7 +23,7 @@ async def fetch_group_dataset_detail(
     if not group_dataset:
         raise HTTPException(status_code=404, detail="GroupDataset not found")
 
-    created_by = UserModel(group_dataset.created_by_user)
+    created_by = group_dataset.created_by_user
     user_data = None
     if created_by:
         user_data = {
@@ -43,3 +42,18 @@ async def fetch_group_dataset_detail(
             "created_at": group_dataset.created_at,
         }
     )
+
+
+async def update_latest_version_group_dataset(
+    id: int, latest_version: int, db: AsyncSession
+) -> bool:
+    stmt = (
+        update(GroupDatasetModel)
+        .where(GroupDatasetModel.id == id)
+        .values(latest_version=latest_version)
+        .execution_options(synchronize_session="fetch")
+    )
+
+    await db.execute(stmt)
+
+    return True

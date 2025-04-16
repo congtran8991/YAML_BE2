@@ -23,7 +23,7 @@ async def get_group_datasets(db: AsyncSession = Depends(get_db)):
 
 
 @router.get(
-    "/api/group-datasets/{group_dataset_id}", response_model=List[GroupDatasetResponse]
+    "/api/group-datasets/{group_dataset_id}", response_model=GroupDatasetResponse
 )
 async def get_group_datasets(group_dataset_id: int, db: AsyncSession = Depends(get_db)):
     return await get_group_dataset_detail(group_dataset_id=group_dataset_id, db=db)
