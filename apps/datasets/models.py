@@ -1,33 +1,36 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    TIMESTAMP,
+    UniqueConstraint,
+    Boolean,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from database.db_setting import ModelBase  # Giả sử bạn đã khai báo Base ở đây
 from datetime import datetime
+from database.db_setting import ModelBase
 
 
 class DatasetModel(ModelBase):
     __tablename__ = "datasets"
 
     id = Column(Integer, primary_key=True, index=True)
-    group_dataset_id = Column(
-        Integer, ForeignKey("groupdatasets.id", ondelete="CASCADE"), nullable=False
+    version_id = Column(
+        Integer, ForeignKey("dataset_versions.id", ondelete="CASCADE"), nullable=False
     )
     name = Column(String(100), nullable=False)
     input = Column(JSONB, nullable=False, default=dict)
     steps = Column(JSONB, nullable=False, default=list)
     output = Column(JSONB, default=dict)
-    version = Column(Integer, nullable=False, default=1)
+    active = Column(Boolean, default=False)
     created_by_id = Column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    created_at = Column(TIMESTAMP, default=datetime.now())
+    created_at = Column(TIMESTAMP, default=datetime.now)
 
-    __table_args__ = (
-        UniqueConstraint(
-            "group_dataset_id", "name", "version", name="uq_group_name_version"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("version_id", "name", name="uq_version_name"),)
 
-    group_datasets = relationship("GroupDatasetModel", back_populates="datasets")
+    dataset_versions = relationship("DatasetVersionModel", back_populates="datasets")
     created_by_user = relationship("UserModel", back_populates="datasets")

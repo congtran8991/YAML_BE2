@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from database.db_setting import ModelBase  # Giả sử bạn đã khai báo Base ở đây
 from datetime import datetime
 
+
 class UserModel(ModelBase):
     __tablename__ = "users"
 
@@ -14,3 +15,6 @@ class UserModel(ModelBase):
     # relationships
     group_datasets = relationship("GroupDatasetModel", back_populates="created_by_user")
     datasets = relationship("DatasetModel", back_populates="created_by_user")
+    dataset_versions = relationship(
+        "DatasetVersionModel", back_populates="created_by_user"
+    )

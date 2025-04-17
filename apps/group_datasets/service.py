@@ -138,7 +138,7 @@ async def create_group_dataset(
             code=db_group_dataset.code,
             name=db_group_dataset.name,
             latest_version=db_group_dataset.latest_version,
-            created_by_user=created_by_user,  # Trả về thông tin đầy đủ của user
+            created_by_user=user,  # Trả về thông tin đầy đủ của user
             created_at=db_group_dataset.created_at,
         )
 

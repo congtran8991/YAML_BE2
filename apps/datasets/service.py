@@ -2,6 +2,8 @@ from typing import List
 from apps.datasets.schema import DatasetCreateRequest
 from apps.datasets.models import DatasetModel
 from apps.users.schema import UserInToken
+from apps.dataset_versions.helpers import create_dataset_version
+from apps.dataset_versions.schema import DatasetVersionCreateRequest
 
 from apps.group_datasets.fetch import (
     fetch_group_dataset_detail,
@@ -96,6 +98,8 @@ async def create_multiple_dataset(
             group_dataset_id=_group_dataset_id, db=db
         )
 
+        print("_group_dataset", _group_dataset)
+
         if not _group_dataset:
             raise UnicornException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -112,13 +116,30 @@ async def create_multiple_dataset(
                 message="latest_version_must_be_greater_than_0",
             )
 
-        created = await add_and_update_version_dataset(
+        _data_create_dataset_version = {
+            "group_dataset_id": _group_dataset_id,
+            "version": _latest_version + 1,
+            "created_by_id": user.id,
+        }
+
+        _dataset_version = await create_dataset_version(
+            db=db, data=DatasetVersionCreateRequest(**_data_create_dataset_version)
+        )
+
+        print("-------------dataset_version-------------")
+
+        created_dataset = await add_and_update_version_dataset(
+            version_id=_dataset_version.id,
             group_dataset_id=_group_dataset_id,
             latest_version=_latest_version + 1,
             list_dataset=_list_dataset,
             db=db,
             user=user,
         )
+
+        await db.commit()
+        for dataset in created_dataset:
+            await db.refresh(dataset)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
@@ -127,7 +148,7 @@ async def create_multiple_dataset(
                     "success": True,
                     "status_code": status.HTTP_201_CREATED,
                     "message": "Create data successfully",
-                    "data": [jsonable_encoder(d) for d in created],
+                    "data": [jsonable_encoder(d) for d in created_dataset],
                 }
             ),
         )

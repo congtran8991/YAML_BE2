@@ -44,3 +44,19 @@ async def get_dataset_by_group_dataset(
     return await get_datasets_by_group_dataset_id(
         db=db, group_dataset_id=group_dataset_id, version=version
     )
+
+
+@router.get(
+    "/api/datasets/group-dataset/{group_dataset_id}",
+    response_model=Any,
+    tags=["Datasets"],
+)
+async def get_dataset_by_group_dataset(
+    group_dataset_id: int,
+    version: int,
+    db: AsyncSession = Depends(get_db),
+) -> List[DatasetResponse]:
+    print(group_dataset_id, version, "requestBody1")
+    return await get_datasets_by_group_dataset_id(
+        db=db, group_dataset_id=group_dataset_id, version=version
+    )

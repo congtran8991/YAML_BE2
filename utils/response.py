@@ -13,30 +13,33 @@ T = TypeVar("T")
 
 # Định nghĩa response wrapper với kiểu dữ liệu động
 
+
 class ResponseWrapper(BaseModel, Generic[T]):
     success: bool
     status_code: int
     message: str
     data: Optional[T]
 
+
 class ResponseErrUtils:
     @staticmethod
-    async def error_DB(err: SQLAlchemyError) -> any:
-        message = str(getattr(err.orig, 'args', [str(err)])[0])
-
-        print(message, "message123")
-        
+    async def error_DB(err):
+        print("SQLAlchemyError >>>", repr(err))
+        try:
+            message = str(getattr(err.orig, "args", [str(err)])[0])
+        except AttributeError:
+            message = str(err)
 
         return JSONResponse(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
             content={
                 "success": False,
-                "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "message": f"Database error: {message}",
-                "data": None
-            }
+                "message": message,
+                "message": repr(err),
+                "data": None,
+            },
         )
-    
+
     @staticmethod
     async def error_Other(err: Exception) -> any:
         return JSONResponse(
@@ -45,10 +48,10 @@ class ResponseErrUtils:
                 "success": False,
                 "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "message": str(err),
-                "data": None
-            }
+                "data": None,
+            },
         )
-    
+
     @staticmethod
     async def error_UE(err: UnicornException) -> ResponseWrapper:
         return JSONResponse(
@@ -57,30 +60,29 @@ class ResponseErrUtils:
                 "success": False,
                 "status_code": err.status_code,
                 "message": err.message,
-                "data": None
-            }
+                "data": None,
+            },
         )
-    
+
     @staticmethod
     async def error_invalid_data(message: str) -> any:
         return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "success": False,
-            "status_code":status.HTTP_422_UNPROCESSABLE_ENTITY,
-            "message":  message,
-            "data": None
-        }
-    )
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "success": False,
+                "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "message": message,
+                "data": None,
+            },
+        )
 
 
 class ResponseCreateSuccess:
     @staticmethod
     async def success_created(data: T) -> ResponseWrapper:
         return ResponseWrapper(
-            success = True,
-            status_code = status.HTTP_201_CREATED,
-            message = "Create data successfully",
-            data = data
+            success=True,
+            status_code=status.HTTP_201_CREATED,
+            message="Create data successfully",
+            data=data,
         )
-    
