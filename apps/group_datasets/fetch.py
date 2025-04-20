@@ -3,18 +3,22 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import update
 from apps.group_datasets.models import GroupDatasetModel
 from apps.group_datasets.schema import GroupDatasetResponse
+from apps.users.schema import UserInToken
 from apps.users.models import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
 
 async def fetch_group_dataset_detail(
-    group_dataset_id: int, db: AsyncSession
+    group_dataset_id: int, db: AsyncSession, user: UserInToken
 ) -> GroupDatasetResponse:
     print("-------------------fetch_group_dataset_detail-------------------")
     stmt = (
         select(GroupDatasetModel)
-        .where(GroupDatasetModel.id == group_dataset_id)
+        .where(
+            GroupDatasetModel.id == group_dataset_id,
+            GroupDatasetModel.created_by_id == user.id,
+        )
         .options(joinedload(GroupDatasetModel.created_by_user))
     )
     result = await db.execute(stmt)

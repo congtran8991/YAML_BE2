@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
@@ -14,6 +14,7 @@ class DatasetVersionModel(ModelBase):
         Integer, ForeignKey("groupdatasets.id", ondelete="CASCADE"), nullable=False
     )
     note = Column(String(100), unique=True, nullable=False)
+    active = Column(Boolean, default=True)
     version = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.now)
     created_by_id = Column(

@@ -18,7 +18,7 @@ class DatasetVersionCreateRequest(BaseModel):
     )
 
 
-class DatasetVersionCreateResponse(BaseModel):
+class DatasetVersionResponse(BaseModel):
     id: int
     group_dataset_id: int
     version: int

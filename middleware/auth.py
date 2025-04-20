@@ -1,37 +1,3 @@
-# from fastapi import FastAPI, Request
-# from starlette.middleware.base import BaseHTTPMiddleware
-# from starlette.responses import JSONResponse
-# from utils.token import verify_jwt_token
-
-# app = FastAPI()
-
-# class AuthMiddleware(BaseHTTPMiddleware):
-#     async def dispatch(self, request: Request, call_next):
-#         # Lấy header Authorization
-#         include_paths = ["/api/login-user"]
-#         if request.url.path in include_paths:
-#                 return await call_next(request)
-
-#         auth_header = request.headers.get("Authorization")
-#         print(auth_header, "auth_header")
-#         is_auth = verify_jwt_token(auth_header)
-#         if auth_header:
-#             is_auth = verify_jwt_token(auth_header)
-#             if auth_header.startswith("Bearer "):
-#                 token = auth_header.replace("Bearer ", "")
-#                 # Bạn có thể decode/validate token ở đây
-#                 print("Token từ middleware:", token)
-#                 # request.state.token = token  # lưu token nếu muốn dùng sau
-#             else:
-#                 return JSONResponse(status_code=401, content={"detail": "Invalid token format"})
-#         else:
-#             print("Không có token trong header")
-
-#         # Cho phép request đi tiếp
-#         response = await call_next(request)
-#         return await call_next(request)
-
-
 from fastapi import FastAPI, Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -55,8 +21,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 return await call_next(request)
 
             auth_header = request.headers.get("Authorization")
-
-            print(auth_header, "auth_header1")
 
             payload = verify_jwt_token(auth_header)
             if payload:

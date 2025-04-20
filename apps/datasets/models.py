@@ -24,7 +24,6 @@ class DatasetModel(ModelBase):
     input = Column(JSONB, nullable=False, default=dict)
     steps = Column(JSONB, nullable=False, default=list)
     output = Column(JSONB, default=dict)
-    active = Column(Boolean, default=False)
     created_by_id = Column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )

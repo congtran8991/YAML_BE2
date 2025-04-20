@@ -22,34 +22,41 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from apps.group_datasets.schema import GroupDatasetResponse
 from apps.datasets.helpers import add_and_update_version_dataset
+from apps.users.schema import UserInToken
 
 from utils.response import ResponseErrUtils
 from utils.handling_errors.exception_handler import UnicornException
+from utils.permission import has_permission
 
 
-async def get_datasets_by_group_dataset_id(
-    group_dataset_id: int,
-    version: int,
-    db: AsyncSession,
+async def get_datasets_by_dataset_version_service(
+    dataset_version_id: int, group_dataset_id: int, db: AsyncSession, user: UserInToken
 ):
     try:
-        _version = version
-        _group_dataset_id = group_dataset_id
+        _is_permission = has_permission(
+            db=db, group_dataset_id=group_dataset_id, user=user, action="view"
+        )
+
+        if not _is_permission:
+            raise UnicornException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                message="you_do_not_have_access",
+            )
+
+        _dataset_version_id = dataset_version_id
 
         stmt = (
             select(DatasetModel)
             .options(
                 selectinload(DatasetModel.created_by_user),
-                selectinload(DatasetModel.group_datasets),
+                selectinload(DatasetModel.dataset_versions),
             )
             .where(
-                DatasetModel.group_dataset_id == _group_dataset_id,
-                DatasetModel.version == _version,
+                DatasetModel.version_id == _dataset_version_id,
             )
         )
         result = await db.execute(stmt)
-        list_dataset_in_group = result.scalars().all()
-        print("list_dataset_in_group", list_dataset_in_group)
+        list_dataset_in_dataset_versions = result.scalars().all()
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -58,7 +65,7 @@ async def get_datasets_by_group_dataset_id(
                     "success": True,
                     "status_code": status.HTTP_200_OK,
                     "message": "Get data successfully",
-                    "data": list_dataset_in_group,
+                    "data": list_dataset_in_dataset_versions,
                 }
             ),
         )
@@ -85,8 +92,19 @@ async def create_multiple_dataset(
 ):
 
     try:
+
         _list_dataset = requestBody.list_dataset
         _group_dataset_id = requestBody.group_dataset_id
+
+        _is_permission = has_permission(
+            db=db, group_dataset_id=_group_dataset_id, user=user, action="view"
+        )
+
+        if not _is_permission:
+            raise UnicornException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                message="you_do_not_have_access",
+            )
 
         if len(_list_dataset) == 0:
             raise UnicornException(
@@ -97,8 +115,6 @@ async def create_multiple_dataset(
         _group_dataset = await fetch_group_dataset_detail(
             group_dataset_id=_group_dataset_id, db=db
         )
-
-        print("_group_dataset", _group_dataset)
 
         if not _group_dataset:
             raise UnicornException(

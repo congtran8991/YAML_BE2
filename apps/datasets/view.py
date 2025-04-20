@@ -10,7 +10,7 @@ from apps.datasets.schema import (
 )
 from apps.datasets.service import (
     create_multiple_dataset,
-    get_datasets_by_group_dataset_id,
+    get_datasets_by_dataset_version_service,
 )
 from database.postgresql import get_db
 
@@ -31,32 +31,35 @@ async def created_dataset(
 
 
 @router.get(
-    "/api/datasets/group-dataset/{group_dataset_id}",
+    "/api/datasets/group-dataset/{group_dataset_id}/dataset-version/{dataset_version_id}",
     response_model=Any,
-    tags=["Datasets"],
+    tags=["datasets"],
 )
-async def get_dataset_by_group_dataset(
+async def get_dataset_by_dataset_version(
+    request: Request,
     group_dataset_id: int,
-    version: int,
+    dataset_version_id: int,
     db: AsyncSession = Depends(get_db),
 ) -> List[DatasetResponse]:
-    print(group_dataset_id, version, "requestBody1")
-    return await get_datasets_by_group_dataset_id(
-        db=db, group_dataset_id=group_dataset_id, version=version
+    user = request.state.user
+    return await get_datasets_by_dataset_version_service(
+        db=db,
+        dataset_version_id=dataset_version_id,
+        group_dataset_id=group_dataset_id,
+        user=user,
     )
 
 
-@router.get(
-    "/api/datasets/group-dataset/{group_dataset_id}",
-    response_model=Any,
-    tags=["Datasets"],
-)
-async def get_dataset_by_group_dataset(
-    group_dataset_id: int,
-    version: int,
-    db: AsyncSession = Depends(get_db),
-) -> List[DatasetResponse]:
-    print(group_dataset_id, version, "requestBody1")
-    return await get_datasets_by_group_dataset_id(
-        db=db, group_dataset_id=group_dataset_id, version=version
-    )
+# @router.get(
+#     "/api/datasets/group-dataset/{group_dataset_id}",
+#     response_model=Any,
+#     tags=["datasets"],
+# )
+# async def get_dataset_by_group_dataset(
+#     group_dataset_id: int,
+#     version: int,
+#     db: AsyncSession = Depends(get_db),
+# ) -> List[DatasetResponse]:
+#     return await get_datasets_by_group_dataset_id(
+#         db=db, group_dataset_id=group_dataset_id, version=version
+#     )

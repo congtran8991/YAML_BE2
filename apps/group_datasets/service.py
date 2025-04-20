@@ -2,12 +2,14 @@ from typing import List
 from apps.group_datasets.schema import GroupDatasetResponse, GroupDatasetCreateRequest
 from apps.users.schema import UserInToken
 from apps.group_datasets.models import GroupDatasetModel
+from apps.permission_group_datasets.models import GroupDatasetPermissionModel
 from apps.group_datasets.fetch import fetch_group_dataset_detail
 from apps.users.models import UserModel
 from apps.users.schema import UserResponse
 from apps.permission_group_datasets.helpers import grant_full_permission
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import or_
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import joinedload
 import logging
@@ -20,12 +22,26 @@ from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
 
 from utils.response import ResponseErrUtils, ResponseCreateSuccess
+from utils.permission import has_permission
 
 
-async def get_all_group_datasets(db: AsyncSession) -> List[GroupDatasetResponse]:
+async def get_all_group_datasets(
+    db: AsyncSession, user: UserInToken
+) -> List[GroupDatasetResponse]:
     try:
-        stmt = select(GroupDatasetModel).options(
-            joinedload(GroupDatasetModel.created_by_user)
+        subquery = select(GroupDatasetPermissionModel.group_dataset_id).where(
+            GroupDatasetPermissionModel.granted_to_user_id == user.id,
+            GroupDatasetPermissionModel.can_view == True,
+        )
+        stmt = (
+            select(GroupDatasetModel)
+            .options(joinedload(GroupDatasetModel.created_by_user))
+            .where(
+                or_(
+                    GroupDatasetModel.created_by_id == user.id,
+                    GroupDatasetModel.id.in_(subquery),
+                )
+            )
         )
         result = await db.execute(stmt)
         list_group_datasets = result.scalars().all()
@@ -76,11 +92,11 @@ async def get_all_group_datasets(db: AsyncSession) -> List[GroupDatasetResponse]
 
 
 async def get_group_dataset_detail(
-    group_dataset_id: int, db: AsyncSession
+    group_dataset_id: int, db: AsyncSession, user: UserInToken
 ) -> GroupDatasetResponse:
     try:
         _group_dataset = await fetch_group_dataset_detail(
-            group_dataset_id=group_dataset_id, db=db
+            group_dataset_id=group_dataset_id, db=db, user=user
         )
         if not _group_dataset:
             raise UnicornException(
@@ -131,7 +147,7 @@ async def create_group_dataset(
         await db.commit()
         await db.refresh(db_group_dataset, attribute_names=["created_by_user"])
 
-        created_by_user = UserResponse.model_validate(db_group_dataset.created_by_user)
+        # created_by_user = UserResponse.model_validate(db_group_dataset.created_by_user)
 
         response_data = GroupDatasetResponse(
             id=db_group_dataset.id,

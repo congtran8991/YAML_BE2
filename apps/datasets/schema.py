@@ -3,7 +3,7 @@ from typing import Optional, Annotated, Dict, Any, List
 from datetime import datetime
 
 from apps.users.schema import UserInToken
-from apps.group_datasets.schema import GroupDatasetResponse
+from apps.dataset_versions.schema import DatasetVersionResponse
 
 
 # Define the schema for GroupDatasets
@@ -42,18 +42,20 @@ class DatasetsByGroupDatasetRequest(BaseModel):
 
 class DatasetResponse(BaseModel):
     id: int
-    group_datasets: Optional[GroupDatasetResponse]
     name: str
     input: Dict  # Có thể là dict hoặc list tùy thuộc vào cấu trúc JSON
     steps: List  # Danh sách các bước
     output: Dict
-    version: int
+    version_id: int
+    created_by_id: int
     created_at: datetime
 
     # Schema cho user tạo dataset (có thể lấy thông tin user khi cần thiết)
     created_by_user: Optional[
         UserInToken
     ]  # Thông tin người tạo nếu có (ví dụ: {"id": 1, "email": "user@example.com"})
+
+    dataset_versions: Optional[DatasetVersionResponse]
 
     model_config = ConfigDict(
         from_attributes=True,  # Tự động ánh xạ từ các thuộc tính của đối tượng
