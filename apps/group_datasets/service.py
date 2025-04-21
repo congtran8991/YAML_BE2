@@ -5,7 +5,7 @@ from apps.group_datasets.models import GroupDatasetModel
 from apps.permission_group_datasets.models import GroupDatasetPermissionModel
 from apps.group_datasets.fetch import fetch_group_dataset_detail
 from apps.users.models import UserModel
-from apps.users.schema import UserResponse
+from apps.users.schema import UserResponse, TypePermission
 from apps.permission_group_datasets.helpers import grant_full_permission
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -38,6 +38,7 @@ async def get_all_group_datasets(
             .options(joinedload(GroupDatasetModel.created_by_user))
             .where(
                 or_(
+                    user.is_supper_admin == True,
                     GroupDatasetModel.created_by_id == user.id,
                     GroupDatasetModel.id.in_(subquery),
                 )
@@ -142,6 +143,9 @@ async def create_group_dataset(
             db=db,
             user_id=user.id,
             group_dataset_id=db_group_dataset.id,
+            type_permission=TypePermission(
+                can_view=True, can_create=True, can_edit=True, can_delete=True
+            ),
         )
 
         await db.commit()

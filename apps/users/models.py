@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, func
+from sqlalchemy import Column, Integer, String, TIMESTAMP, Boolean
 from sqlalchemy.orm import relationship
 from database.db_setting import ModelBase  # Giả sử bạn đã khai báo Base ở đây
 from datetime import datetime
@@ -10,6 +10,7 @@ class UserModel(ModelBase):
     id = Column(Integer, primary_key=True)
     email = Column(String(100), unique=True, nullable=False)
     hashed_password = Column(String(300), nullable=False)
+    is_supper_admin = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, default=datetime.now())
 
     # relationships

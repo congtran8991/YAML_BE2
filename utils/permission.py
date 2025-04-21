@@ -17,16 +17,9 @@ async def has_permission(
     user: UserInToken,
     action: str = "view",  # hoặc "edit", "delete"
 ):
-    # 1. Kiểm tra nếu user là người tạo
-    stmt = select(GroupDatasetModel).where(
-        GroupDatasetModel.id == group_dataset_id,
-        GroupDatasetModel.created_by_id == user.id,
-    )
-    result = await db.execute(stmt)
-    group_dataset = result.scalar_one_or_none()
-
-    if group_dataset:
-        return True  # Là chủ sở hữu → full quyền
+    # 1. Kiểm tra nếu user là super admin
+    if user.is_supper_admin:
+        return True
 
     # 2. Kiểm tra xem có được cấp quyền thông qua permission model không
     stmt = select(GroupDatasetPermissionModel).where(

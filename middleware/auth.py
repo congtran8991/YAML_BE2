@@ -25,7 +25,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             payload = verify_jwt_token(auth_header)
             if payload:
                 request.state.user = UserInToken(
-                    id=payload.get("iss"), email=payload.get("sub")
+                    id=payload.get("iss"),
+                    email=payload.get("sub"),
+                    is_supper_admin=payload.get("is_supper_admin"),
                 )
                 return await call_next(request)
             else:

@@ -87,6 +87,7 @@ async def login_account(requestBody: schema.UserLoginRequest, db: AsyncSession):
         id = existing_user.id
         email = existing_user.email
         hashed_password = existing_user.hashed_password
+        is_supper_admin = existing_user.is_supper_admin
         created_at = existing_user.created_at
 
         is_verify_password = Hasher.verify_password(
@@ -100,12 +101,14 @@ async def login_account(requestBody: schema.UserLoginRequest, db: AsyncSession):
                 "iss": id,
                 "sub": email,
                 "exp": current_time_seconds + 60 * 60 * 1,  # 1 phút
+                "is_supper_admin": is_supper_admin,
             }
 
             payload_refetch_token = {
                 "iss": id,
                 "sub": email,
                 "exp": current_time_seconds + 60 * 60 * 1,  # 60 phút
+                "is_supper_admin": is_supper_admin,
             }
 
             access_token = get_access_token(payload_access_token)

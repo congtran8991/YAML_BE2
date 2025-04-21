@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
 class UserInToken(BaseModel):
     id: int
     email: EmailStr
+    is_supper_admin: bool
 
     class Config:
         orm_mode = True
@@ -46,3 +47,10 @@ class UserLoginResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TypePermission(BaseModel):
+    can_view: bool  # quyền đầy đủ
+    can_create: bool  # quyền đầy đủ
+    can_edit: bool  # quyền đầy đủ
+    can_delete: bool  # quyền đầy đủ
