@@ -8,6 +8,7 @@ from apps.group_datasets import view as group_datasets_view
 from apps.datasets import view as datasets_view
 from apps.users import view as users_view
 from apps.dataset_versions import view as dataset_versions_view
+from apps.permission_group_datasets import view as permission_group_datasets_view
 
 
 from utils.response import ResponseErrUtils
@@ -49,3 +50,4 @@ app.include_router(users_view.router)
 app.include_router(group_datasets_view.router)
 app.include_router(datasets_view.router)
 app.include_router(dataset_versions_view.router)
+app.include_router(permission_group_datasets_view.router)

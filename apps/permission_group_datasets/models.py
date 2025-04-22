@@ -28,6 +28,12 @@ class GroupDatasetPermissionModel(ModelBase):
     )  # user cho quyền
     granted_at = Column(TIMESTAMP, default=datetime.now())
 
+    __table_args__ = (
+        UniqueConstraint(
+            "granted_to_user_id", "group_dataset_id", name="uix_granted_user_group"
+        ),
+    )
+
     # Quan hệ (optional - giúp dễ truy cập thông tin nếu cần)
     group_datasets = relationship(
         "GroupDatasetModel", back_populates="permissions_group_datasets"

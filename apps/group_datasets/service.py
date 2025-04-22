@@ -141,7 +141,8 @@ async def create_group_dataset(
 
         await grant_full_permission(
             db=db,
-            user_id=user.id,
+            granted_by_user_id=user.id,
+            granted_to_user_id=user.id,
             group_dataset_id=db_group_dataset.id,
             type_permission=TypePermission(
                 can_view=True, can_create=True, can_edit=True, can_delete=True
@@ -171,6 +172,10 @@ async def create_group_dataset(
         # Lỗi liên quan đến database
         await db.rollback()
         return await ResponseErrUtils.error_DB(err)
+
+    except UnicornException as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
 
     except Exception as err:
         logging.exception("------error", err)

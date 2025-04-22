@@ -16,7 +16,9 @@ class GroupDatasetCreateRequest(BaseModel):
     created_by_id: Optional[int] = Field(default=None, ge=1)
 
     class Config:
-        orm_mode = True  # Allows SQLAlchemy models to be converted to Pydantic models
+        from_attributes = (
+            True  # Allows SQLAlchemy models to be converted to Pydantic models
+        )
 
 
 class GroupDatasetResponse(BaseModel):
@@ -28,5 +30,7 @@ class GroupDatasetResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True  # Allows SQLAlchemy models to be converted to Pydantic models
+        from_attributes = (
+            True  # Allows SQLAlchemy models to be converted to Pydantic models
+        )
         from_attributes = True

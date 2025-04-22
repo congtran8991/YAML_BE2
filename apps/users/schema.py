@@ -30,7 +30,7 @@ class UserInToken(BaseModel):
     is_supper_admin: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserLoginRequest(BaseModel):
@@ -46,7 +46,7 @@ class UserLoginResponse(BaseModel):
     refetch_token: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TypePermission(BaseModel):

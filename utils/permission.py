@@ -29,6 +29,8 @@ async def has_permission(
     result = await db.execute(stmt)
     permission = result.scalar_one_or_none()
 
+    print("permission", permission)
+
     if not permission:
         return False
 

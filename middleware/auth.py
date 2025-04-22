@@ -23,6 +23,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             auth_header = request.headers.get("Authorization")
 
             payload = verify_jwt_token(auth_header)
+
             if payload:
                 request.state.user = UserInToken(
                     id=payload.get("iss"),
