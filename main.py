@@ -42,7 +42,7 @@ app.add_middleware(AuthMiddleware)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print("Error:", exc.errors(), "------------request:", request)
+    print("Error:", exc.errors(), "------------request:", request.json())
     return await ResponseErrUtils.error_invalid_data("Dữ liệu gửi lên không hợp lệ")
 
 
