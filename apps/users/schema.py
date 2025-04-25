@@ -16,6 +16,7 @@ class UserRegisterRequest(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
+    is_supper_admin: bool
     created_at: datetime
 
     model_config = ConfigDict(

@@ -4,14 +4,17 @@ from fastapi import status
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 import time
+from apps.users.schema import UserInToken
 
 from apps.users import schema, models
 from utils.handling_errors.exception_handler import UnicornException
 from utils.hasher import Hasher
-from utils.response import ResponseErrUtils, ResponseCreateSuccess
+from utils.response import ResponseErrUtils, ResponseSuccess, ResponseSuccess
 from utils.token import get_access_token, get_refetch_token
 
 from apps.users.schema import UserRegisterRequest, UserResponse, UserLoginResponse
+
+from apps.users.helpers import get_user_by_identifier
 
 
 async def register_user_db(
@@ -48,7 +51,7 @@ async def register_user_db(
             created_at=db_user.created_at.isoformat(),
         )
 
-        return await ResponseCreateSuccess.success_created(data=_user)
+        return await ResponseSuccess.success_created(data=_user)
 
     except SQLAlchemyError as err:
         print("------error", err)
@@ -121,7 +124,7 @@ async def login_account(requestBody: schema.UserLoginRequest, db: AsyncSession):
                 access_token=access_token,
                 refetch_token=refetch_token,
             )
-            return await ResponseCreateSuccess.success_created(data=res_data)
+            return await ResponseSuccess.success_created(data=res_data)
 
         raise UnicornException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -152,3 +155,24 @@ async def login_account(requestBody: schema.UserLoginRequest, db: AsyncSession):
                 "data": None,
             },
         )
+
+
+async def get_current_users_service(
+    db: AsyncSession, user: UserInToken
+) -> UserResponse:
+    try:
+
+        current_user = await get_user_by_identifier(db=db, identifier=user.id)
+        return await ResponseSuccess.success_get(data=current_user)
+
+    except SQLAlchemyError as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_DB(err)
+
+    except UnicornException as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
+
+    except Exception as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_Other(err)

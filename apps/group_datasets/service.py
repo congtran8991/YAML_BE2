@@ -1,9 +1,16 @@
 from typing import List
-from apps.group_datasets.schema import GroupDatasetResponse, GroupDatasetCreateRequest
+from apps.group_datasets.schema import (
+    GroupDatasetResponse,
+    GroupDatasetCreateRequest,
+    GroupDatasetUpdateRequest,
+)
 from apps.users.schema import UserInToken
 from apps.group_datasets.models import GroupDatasetModel
 from apps.permission_group_datasets.models import GroupDatasetPermissionModel
-from apps.group_datasets.fetch import fetch_group_dataset_detail
+from apps.group_datasets.fetch import (
+    fetch_group_dataset_detail,
+    update_info_group_dataset,
+)
 from apps.users.models import UserModel
 from apps.users.schema import UserResponse, TypePermission
 from apps.permission_group_datasets.helpers import grant_full_permission
@@ -21,7 +28,7 @@ from utils.handling_errors.exception_handler import UnicornException
 from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
 
-from utils.response import ResponseErrUtils, ResponseCreateSuccess
+from utils.response import ResponseErrUtils, ResponseSuccess
 from utils.permission import has_permission
 
 
@@ -163,9 +170,48 @@ async def create_group_dataset(
             created_at=db_group_dataset.created_at,
         )
 
-        return await ResponseCreateSuccess.success_created(
-            data=response_data.model_dump()
+        return await ResponseSuccess.success_created(data=response_data.model_dump())
+
+    except SQLAlchemyError as err:
+        logging.exception("------error", err)
+        # Lỗi liên quan đến database
+        await db.rollback()
+        return await ResponseErrUtils.error_DB(err)
+
+    except UnicornException as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
+
+    except Exception as err:
+        logging.exception("------error", err)
+        # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
+        await db.rollback()
+        return await ResponseErrUtils.error_Other(err)
+
+
+async def update_group_dataset_service(
+    user: UserInToken, requestBody: GroupDatasetUpdateRequest, db: AsyncSession
+):
+    try:
+        _id = requestBody.id
+        _code = requestBody.code
+        _name = requestBody.name
+
+        _is_permission = has_permission(
+            db=db, group_dataset_id=_id, user=user, action="view"
         )
+
+        if not _is_permission:
+            raise UnicornException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                message="you_do_not_have_access",
+            )
+
+        record_group_dataset = await update_info_group_dataset(
+            db=db, id=_id, code=_code, name=_name
+        )
+
+        return await ResponseSuccess.success_update(data=record_group_dataset)
 
     except SQLAlchemyError as err:
         logging.exception("------error", err)

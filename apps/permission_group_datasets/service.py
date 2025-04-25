@@ -25,7 +25,7 @@ from fastapi.encoders import jsonable_encoder
 
 from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
-from utils.response import ResponseErrUtils, ResponseCreateSuccess
+from utils.response import ResponseErrUtils, ResponseSuccess
 from sqlalchemy.exc import IntegrityError
 from utils.permission import has_permission
 
@@ -107,7 +107,7 @@ async def add_permission_service(
         await db.commit()
         await db.refresh(db_permission)
 
-        return await ResponseCreateSuccess.success_created(data=True)
+        return await ResponseSuccess.success_created(data=True)
 
     except IntegrityError as e:
         # Xử lý lỗi khi vi phạm unique constraint

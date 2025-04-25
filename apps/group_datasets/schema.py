@@ -21,6 +21,20 @@ class GroupDatasetCreateRequest(BaseModel):
         )
 
 
+class GroupDatasetUpdateRequest(BaseModel):
+    id: int = Field(...)
+    code: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=50),
+        Field(..., description="Required code"),
+    ]
+    name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=100),
+        Field(..., description="Required code"),
+    ]
+
+
 class GroupDatasetResponse(BaseModel):
     id: int
     code: str

@@ -3,11 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.group_datasets.schema import GroupDatasetCreateRequest, GroupDatasetResponse
+from apps.group_datasets.schema import (
+    GroupDatasetCreateRequest,
+    GroupDatasetResponse,
+    GroupDatasetUpdateRequest,
+)
 from apps.group_datasets.service import (
     get_all_group_datasets,
     create_group_dataset,
     get_group_dataset_detail,
+    update_group_dataset_service,
 )
 from database.postgresql import get_db
 
@@ -45,3 +50,13 @@ async def created_group_dataset(
 ):
     user = request.state.user
     return await create_group_dataset(db=db, user=user, requestBody=requestBody)
+
+
+@router.put("/api/group-datasets", response_model=Any)
+async def update_group_dataset(
+    request: Request,
+    requestBody: GroupDatasetUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    user = request.state.user
+    return await update_group_dataset_service(db=db, user=user, requestBody=requestBody)

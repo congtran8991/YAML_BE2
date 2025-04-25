@@ -61,3 +61,24 @@ async def update_latest_version_group_dataset(
     await db.execute(stmt)
 
     return True
+
+
+async def update_info_group_dataset(
+    id: int, code: str, name: str, db: AsyncSession
+) -> GroupDatasetResponse:
+    stmt = (
+        update(GroupDatasetModel)
+        .where(GroupDatasetModel.id == id)
+        .values(code=code, name=name)
+        .execution_options(synchronize_session="fetch")
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+    result = await db.execute(
+        select(GroupDatasetModel).where(GroupDatasetModel.id == id)
+    )
+
+    record_group_dataset = result.scalar_one()
+    return GroupDatasetResponse.model_validate(record_group_dataset)

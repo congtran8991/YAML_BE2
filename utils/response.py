@@ -77,12 +77,30 @@ class ResponseErrUtils:
         )
 
 
-class ResponseCreateSuccess:
+class ResponseSuccess:
     @staticmethod
     async def success_created(data: T) -> ResponseWrapper:
         return ResponseWrapper(
             success=True,
             status_code=status.HTTP_201_CREATED,
             message="Create data successfully",
+            data=data,
+        )
+
+    @staticmethod
+    async def success_get(data: T) -> ResponseWrapper:
+        return ResponseWrapper(
+            success=True,
+            status_code=status.HTTP_200_OK,
+            message="Get data successfully",
+            data=data,
+        )
+
+    @staticmethod
+    async def success_update(data: T) -> ResponseWrapper:
+        return ResponseWrapper(
+            success=True,
+            status_code=status.HTTP_200_OK,
+            message="Update data successfully",
             data=data,
         )
