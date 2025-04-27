@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from apps.dataset_versions.models import DatasetVersionModel
-from apps.dataset_versions.schema import DatasetVersionDelete
+from apps.dataset_versions.schema import DatasetVersionDelete, DatasetVersionUpdate
 
 from sqlalchemy.orm import selectinload
 from fastapi.responses import JSONResponse
@@ -15,7 +15,11 @@ from apps.users.schema import UserInToken
 
 from utils.permission import has_permission, process_permissions
 
-from apps.dataset_versions.helpers import delete_dataset_version
+from apps.dataset_versions.helpers import (
+    delete_dataset_version,
+    update_note_in_dataset_version,
+)
+from apps.group_datasets.fetch import get_group_dataset_id_by_version_id
 
 from utils.response import ResponseErrUtils, ResponseSuccess
 
@@ -75,6 +79,54 @@ async def get_version_dataset_by_group_dataset_service(
 
     except Exception as err:
         print("------error3 get_version_dataset_by_group_dataset_service---------", err)
+        # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
+        await db.rollback()
+        return await ResponseErrUtils.error_Other(err)
+
+
+async def update_group_dataset_version_service(
+    user: UserInToken,
+    group_dataset_id: int,
+    requestBody: DatasetVersionUpdate,
+    db: AsyncSession,
+):
+    try:
+        _id = requestBody.id
+        _note = requestBody.note
+
+        _group_dataset_id_in_db = await get_group_dataset_id_by_version_id(
+            db=db, version_id=_id
+        )
+
+        if _group_dataset_id_in_db != group_dataset_id:
+            raise Exception("Invalid groupDatasetId")
+
+        _is_permission = has_permission(
+            db=db, group_dataset_id=group_dataset_id, user=user, action="edit"
+        )
+
+        if not _is_permission:
+            raise UnicornException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                message="you_do_not_have_access",
+            )
+
+        await update_note_in_dataset_version(
+            db=db, version_id=_id, note=_note, commit=True
+        )
+
+        return await ResponseSuccess.success_update(True)
+
+    except SQLAlchemyError as err:
+        # Lỗi liên quan đến database
+        await db.rollback()
+        return await ResponseErrUtils.error_DB(err)
+
+    except UnicornException as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
+
+    except Exception as err:
         # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
         await db.rollback()
         return await ResponseErrUtils.error_Other(err)

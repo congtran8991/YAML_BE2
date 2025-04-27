@@ -35,3 +35,8 @@ class DatasetVersionResponse(BaseModel):
 class DatasetVersionDelete(BaseModel):
     group_dataset_id: int
     ids: List[int]
+
+
+class DatasetVersionUpdate(BaseModel):
+    id: int
+    note: str

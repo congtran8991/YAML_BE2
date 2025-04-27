@@ -2,13 +2,14 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy import update, delete
 from apps.group_datasets.models import GroupDatasetModel
+from apps.dataset_versions.models import DatasetVersionModel
 from apps.group_datasets.schema import GroupDatasetResponse
 from apps.users.schema import UserInToken
 from apps.users.models import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
-from typing import List
+from typing import List, Optional
 
 
 async def fetch_group_dataset_detail(
@@ -93,3 +94,14 @@ async def delete_group_datasets(db: AsyncSession, ids: List[int], commit: bool =
 
     if commit:
         await db.commit()
+
+
+async def get_group_dataset_id_by_version_id(
+    db: AsyncSession, version_id: int
+) -> Optional[int]:
+    result = await db.scalar(
+        select(DatasetVersionModel.group_dataset_id).where(
+            DatasetVersionModel.id == version_id
+        )
+    )
+    return result

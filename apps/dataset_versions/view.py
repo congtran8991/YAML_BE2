@@ -1,16 +1,15 @@
 from typing import TYPE_CHECKING, List, Any
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from apps.dataset_versions.service import (
     get_version_dataset_by_group_dataset_service,
     delete_group_datasets_version_service,
+    update_group_dataset_version_service,
 )
 
-from apps.dataset_versions.schema import DatasetVersionDelete
+from apps.dataset_versions.schema import DatasetVersionDelete, DatasetVersionUpdate
 from apps.datasets.schema import (
-    DatasetCreateRequest,
-    DatasetsByGroupDatasetRequest,
     DatasetResponse,
 )
 
@@ -41,7 +40,7 @@ async def get_version_dataset_by_group_dataset(
 @router.delete(
     "/api/dataset-version/group-dataset/{group_dataset_id}", response_model=Any
 )
-async def delete_permission(
+async def delete_dataset_version(
     request: Request,
     group_dataset_id: int,
     db: AsyncSession = Depends(get_db),
@@ -59,4 +58,23 @@ async def delete_permission(
         db=db,
         user=user,
         requestBody=DatasetVersionDelete(group_dataset_id=group_dataset_id, ids=_ids),
+    )
+
+
+@router.put("/api/dataset-version/group-dataset/{group_dataset_id}", response_model=Any)
+async def update_dataset_version(
+    request: Request,
+    group_dataset_id: int,
+    requestBody: DatasetVersionUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+
+    # Log thông tin request để kiểm tra
+
+    # Lấy thông tin người dùng từ request
+    user = request.state.user
+
+    # Gọi service xử lý xóa quyền
+    return await update_group_dataset_version_service(
+        db=db, user=user, group_dataset_id=group_dataset_id, requestBody=requestBody
     )

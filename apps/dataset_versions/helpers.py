@@ -8,7 +8,7 @@ from apps.dataset_versions.schema import (
 )
 from typing import List
 
-from sqlalchemy import delete
+from sqlalchemy import delete, update, select
 
 
 async def create_dataset_version(
@@ -40,3 +40,24 @@ async def delete_dataset_version(
 
     if commit:
         await db.commit()
+
+
+async def update_note_in_dataset_version(
+    db: AsyncSession, version_id: int, note: str, commit: bool = False
+) -> None:
+    stmt = (
+        update(DatasetVersionModel)
+        .where(DatasetVersionModel.id == version_id)
+        .values(note=note)
+    )
+    await db.execute(stmt)
+
+    if commit:
+        await db.commit()
+
+    result = await db.execute(
+        select(DatasetVersionModel).where(DatasetVersionModel.id == version_id)
+    )
+    updated_version = result.scalar_one_or_none()
+
+    return DatasetVersionResponse.model_validate(updated_version)
