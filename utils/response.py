@@ -104,3 +104,12 @@ class ResponseSuccess:
             message="Update data successfully",
             data=data,
         )
+
+    @staticmethod
+    async def success_delete(data: T) -> ResponseWrapper:
+        return ResponseWrapper(
+            success=True,
+            status_code=status.HTTP_200_OK,
+            message="Delete data successfully",
+            data=data,
+        )

@@ -96,8 +96,8 @@ async def create_multiple_dataset(
         _list_dataset = requestBody.list_dataset
         _group_dataset_id = requestBody.group_dataset_id
 
-        _is_permission = has_permission(
-            db=db, group_dataset_id=_group_dataset_id, user=user, action="view"
+        _is_permission = await has_permission(
+            db=db, group_dataset_id=_group_dataset_id, user=user, action="create"
         )
 
         if not _is_permission:
@@ -113,7 +113,7 @@ async def create_multiple_dataset(
             )
 
         _group_dataset = await fetch_group_dataset_detail(
-            group_dataset_id=_group_dataset_id, db=db
+            group_dataset_id=_group_dataset_id, db=db, user=user
         )
 
         if not _group_dataset:

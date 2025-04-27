@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, StringConstraints, field_validator
-from typing import Optional, Annotated, Any
+from typing import Optional, Annotated, Any, List
 from datetime import datetime
 from apps.users.schema import UserInToken
 
@@ -47,4 +47,7 @@ class GroupDatasetResponse(BaseModel):
         from_attributes = (
             True  # Allows SQLAlchemy models to be converted to Pydantic models
         )
-        from_attributes = True
+
+
+class GroupDatasetDelete(BaseModel):
+    ids: List[int]

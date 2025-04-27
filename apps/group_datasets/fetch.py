@@ -1,12 +1,14 @@
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
-from sqlalchemy import update
+from sqlalchemy import update, delete
 from apps.group_datasets.models import GroupDatasetModel
 from apps.group_datasets.schema import GroupDatasetResponse
 from apps.users.schema import UserInToken
 from apps.users.models import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
+
+from typing import List
 
 
 async def fetch_group_dataset_detail(
@@ -33,6 +35,7 @@ async def fetch_group_dataset_detail(
         user_data = {
             "id": created_by.id,
             "email": created_by.email,
+            "is_supper_admin": created_by.is_supper_admin,
             "created_at": created_by.created_at,
         }
 
@@ -82,3 +85,11 @@ async def update_info_group_dataset(
 
     record_group_dataset = result.scalar_one()
     return GroupDatasetResponse.model_validate(record_group_dataset)
+
+
+async def delete_group_datasets(db: AsyncSession, ids: List[int], commit: bool = False):
+    stmt = delete(GroupDatasetModel).where(GroupDatasetModel.id.in_(ids))
+    await db.execute(stmt)
+
+    if commit:
+        await db.commit()

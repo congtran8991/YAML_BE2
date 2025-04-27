@@ -199,6 +199,7 @@ async def delete_permission_service(user: UserInToken, requestBody, db: AsyncSes
     try:
 
         _group_dataset_id, _ids = parse_delete_permission_request(requestBody)
+
         await validate_user_permission(
             db=db, group_dataset_id=_group_dataset_id, user=user
         )

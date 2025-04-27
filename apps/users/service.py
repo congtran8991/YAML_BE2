@@ -48,6 +48,7 @@ async def register_user_db(
         _user = UserResponse(
             id=db_user.id,
             email=db_user.email,
+            is_supper_admin=db_user.is_supper_admin,
             created_at=db_user.created_at.isoformat(),
         )
 

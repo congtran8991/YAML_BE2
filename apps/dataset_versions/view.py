@@ -2,13 +2,19 @@ from typing import TYPE_CHECKING, List, Any
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.dataset_versions.service import get_version_dataset_by_group_dataset_service
+from apps.dataset_versions.service import (
+    get_version_dataset_by_group_dataset_service,
+    delete_group_datasets_version_service,
+)
 
+from apps.dataset_versions.schema import DatasetVersionDelete
 from apps.datasets.schema import (
     DatasetCreateRequest,
     DatasetsByGroupDatasetRequest,
     DatasetResponse,
 )
+
+from utils.common import validate_list_ids
 
 from database.postgresql import get_db
 
@@ -29,4 +35,28 @@ async def get_version_dataset_by_group_dataset(
     user = request.state.user
     return await get_version_dataset_by_group_dataset_service(
         db=db, group_dataset_id=group_dataset_id, user=user
+    )
+
+
+@router.delete(
+    "/api/dataset-version/group-dataset/{group_dataset_id}", response_model=Any
+)
+async def delete_permission(
+    request: Request,
+    group_dataset_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    ids = request.query_params.getlist("ids")  # Lấy tất cả giá trị của tham số "ids"
+
+    _ids = validate_list_ids(ids=ids)
+    # Log thông tin request để kiểm tra
+
+    # Lấy thông tin người dùng từ request
+    user = request.state.user
+
+    # Gọi service xử lý xóa quyền
+    return await delete_group_datasets_version_service(
+        db=db,
+        user=user,
+        requestBody=DatasetVersionDelete(group_dataset_id=group_dataset_id, ids=_ids),
     )

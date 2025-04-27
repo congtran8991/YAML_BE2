@@ -16,7 +16,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if request.method == "OPTIONS":
                 return await call_next(request)
 
-            include_paths = ["/api/login-user", "/docs"]
+            include_paths = ["/api/login-user", "/api/register-user"]
             if request.url.path in include_paths:
                 return await call_next(request)
 

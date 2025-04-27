@@ -6,6 +6,9 @@ from apps.dataset_versions.schema import (
     DatasetVersionCreateRequest,
     DatasetVersionResponse,
 )
+from typing import List
+
+from sqlalchemy import delete
 
 
 async def create_dataset_version(
@@ -24,3 +27,16 @@ async def create_dataset_version(
     await db.refresh(new_version)
 
     return DatasetVersionResponse.model_validate(new_version)
+
+
+async def delete_dataset_version(
+    db: AsyncSession, ids: List[int], commit: bool = False
+):
+    if not ids:
+        return
+
+    stmt = delete(DatasetVersionModel).where(DatasetVersionModel.id.in_(ids))
+    await db.execute(stmt)
+
+    if commit:
+        await db.commit()

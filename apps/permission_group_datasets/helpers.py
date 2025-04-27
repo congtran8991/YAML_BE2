@@ -71,6 +71,18 @@ async def delete_permission(db: AsyncSession, ids: List[int]):
     await db.commit()
 
 
+async def delete_permission_by_group_dataset_id(
+    db: AsyncSession, ids: List[int], commit: bool = False
+):
+    stmt = delete(GroupDatasetPermissionModel).where(
+        GroupDatasetPermissionModel.group_dataset_id.in_(ids)
+    )
+    await db.execute(stmt)
+
+    if commit:
+        await db.commit()
+
+
 async def validate_user_permission(
     db: AsyncSession, group_dataset_id: int, user: UserInToken
 ):

@@ -3,6 +3,7 @@ from apps.group_datasets.schema import (
     GroupDatasetResponse,
     GroupDatasetCreateRequest,
     GroupDatasetUpdateRequest,
+    GroupDatasetDelete,
 )
 from apps.users.schema import UserInToken
 from apps.group_datasets.models import GroupDatasetModel
@@ -10,10 +11,13 @@ from apps.permission_group_datasets.models import GroupDatasetPermissionModel
 from apps.group_datasets.fetch import (
     fetch_group_dataset_detail,
     update_info_group_dataset,
+    delete_group_datasets,
 )
-from apps.users.models import UserModel
 from apps.users.schema import UserResponse, TypePermission
-from apps.permission_group_datasets.helpers import grant_full_permission
+from apps.permission_group_datasets.helpers import (
+    grant_full_permission,
+    delete_permission_by_group_dataset_id,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import or_
@@ -29,7 +33,7 @@ from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
 
 from utils.response import ResponseErrUtils, ResponseSuccess
-from utils.permission import has_permission
+from utils.permission import has_permission, process_permissions
 
 
 async def get_all_group_datasets(
@@ -212,6 +216,46 @@ async def update_group_dataset_service(
         )
 
         return await ResponseSuccess.success_update(data=record_group_dataset)
+
+    except SQLAlchemyError as err:
+        logging.exception("------error", err)
+        # Lỗi liên quan đến database
+        await db.rollback()
+        return await ResponseErrUtils.error_DB(err)
+
+    except UnicornException as err:
+        await db.rollback()
+        return await ResponseErrUtils.error_UE(err)
+
+    except Exception as err:
+        logging.exception("------error", err)
+        # Lỗi khác (có thể do model_validate hoặc lỗi không xác định)
+        await db.rollback()
+        return await ResponseErrUtils.error_Other(err)
+
+
+async def delete_group_datasets_service(
+    user: UserInToken, requestBody: GroupDatasetDelete, db: AsyncSession
+):
+    try:
+
+        _ids = requestBody.ids
+
+        _is_permission = await process_permissions(db=db, user=user, ids=_ids)
+
+        if not _is_permission:
+            raise UnicornException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                message="you_do_not_have_access",
+            )
+
+        await delete_permission_by_group_dataset_id(db=db, ids=_ids)
+
+        await delete_group_datasets(db=db, ids=_ids)
+
+        await db.commit()
+
+        return await ResponseSuccess.success_delete(True)
 
     except SQLAlchemyError as err:
         logging.exception("------error", err)

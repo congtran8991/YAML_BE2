@@ -10,6 +10,10 @@ from apps.permission_group_datasets.models import GroupDatasetPermissionModel
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
+import asyncio
+
+from typing import List
+
 
 async def has_permission(
     db: AsyncSession,
@@ -44,3 +48,30 @@ async def has_permission(
         return True
 
     return False
+
+
+async def process_permissions(
+    db: AsyncSession, ids: List[int], user: UserInToken
+) -> bool:
+    tasks = [
+        asyncio.create_task(
+            has_permission(
+                group_dataset_id=group_dataset_id, user=user, action="delete", db=db
+            )
+        )
+        for group_dataset_id in ids
+    ]
+
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+
+    # Check xem có task nào lỗi không
+    for task in done:
+        if task.exception() or not task.result():
+            # Cancel các task còn lại
+            for p in pending:
+                p.cancel()
+            print(f"🚨 Task bị lỗi: {task.exception()}")
+            return False  # Có lỗi => trả về False luôn
+
+    # Nếu tất cả done ok
+    return True

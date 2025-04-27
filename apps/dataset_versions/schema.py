@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -30,3 +30,8 @@ class DatasetVersionResponse(BaseModel):
         from_attributes=True,  # Tự động ánh xạ từ các thuộc tính của đối tượng
         extra="ignore",  # Cho phép bỏ qua field không khai báo
     )
+
+
+class DatasetVersionDelete(BaseModel):
+    group_dataset_id: int
+    ids: List[int]
