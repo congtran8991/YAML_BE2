@@ -6,11 +6,6 @@ from database.db_setting import ModelBase  # Giả định bạn đã có class 
 
 class GroupDatasetPermissionModel(ModelBase):
     __tablename__ = "groupdataset_permissions"
-    __table_args__ = (
-        UniqueConstraint(
-            "group_dataset_id", "granted_to_user_id", name="uq_group_dataset_user"
-        ),
-    )
 
     id = Column(Integer, primary_key=True, index=True)
     group_dataset_id = Column(
@@ -29,6 +24,9 @@ class GroupDatasetPermissionModel(ModelBase):
     granted_at = Column(TIMESTAMP, default=datetime.now())
 
     __table_args__ = (
+        UniqueConstraint(
+            "group_dataset_id", "granted_to_user_id", name="uq_group_dataset_user"
+        ),
         UniqueConstraint(
             "granted_to_user_id", "group_dataset_id", name="uix_granted_user_group"
         ),

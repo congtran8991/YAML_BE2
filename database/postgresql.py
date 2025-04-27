@@ -3,9 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-URL_DATABASE = "postgresql+asyncpg://macintosh:1234@localhost:5432/yaml_tool2"
+URL_DATABASE = "postgresql+asyncpg://macintosh:1234@localhost:5432/yaml_tool3"
 
-engine = create_async_engine(URL_DATABASE)
+engine = create_async_engine(URL_DATABASE, echo=True)
 
 AsyncSessionLocal = sessionmaker(
     autocommit=False,
